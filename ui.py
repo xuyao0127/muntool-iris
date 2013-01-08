@@ -74,7 +74,7 @@ class IrisUI(QMainWindow):
         forwardAction.triggered.connect(self.forward)
         
         aboutAction = QAction(QIcon(os.path.join('img', 'about.png')), 'About', self)
-        aboutAction.setShortcut('Ctrl+A')
+        aboutAction.setShortcut('Ctrl+H')
         aboutAction.triggered.connect(self.about)
 
         
@@ -128,7 +128,9 @@ class IrisUI(QMainWindow):
                           u'''<h2>Iris 模联文件写作工具</h2>
                              <p>作者： IO_Error （东北育才学校）</p>
                              <p>本软件是基于PySide开发，并采用GPL v3协议授权的自由软件。</p>
-                             <p>项目地址为：</p>''')
+                             <p>项目地址为：
+                             <a href="https://github.com/Kevin6241/muntool-iris">https://github.com/Kevin6241/muntool-iris</a>
+                             </p>''')
         
     def initFileList(self):
         print "File List inited!"

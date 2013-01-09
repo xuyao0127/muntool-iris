@@ -33,11 +33,12 @@ def mtfToHtml(mtfStr):
     htmlList = ['<head><title>', 'test2', '</title></head>', '<body>']
     
     for item in mtfList:
-        if not item[0] in ['*', '+', '=', '#']:
-            print "Unknown token "+item[0]+" occurs!"
-            sys.exit(2)
-        else:
-            htmlList.append(convert(item[0], item[1:]))
+        if item:
+            if not item[0] in ['*', '+', '=', '#']:
+                print "Unknown token "+item[0]+" occurs!"
+                sys.exit(2)
+            else:
+                htmlList.append(convert(item[0], item[1:]))
             
     htmlList.append('</body>')
     htmlStr = '\n'.join(htmlList)

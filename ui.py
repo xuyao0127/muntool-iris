@@ -142,13 +142,19 @@ class IrisUI(QMainWindow):
         print 'Import File!'
         (importFile, _) = QFileDialog.getOpenFileName(self, u'导入文件', os.path.expanduser('~'), '*.mtf')
         (_, newfileName) = os.path.split(importFile)
+        newfileName = newfileName.split('.')[0][:-2]
+        print newfileName
         if os.path.isdir(newfileName):
-            if not QMessageBox.accept(self, u'提示', u'已有同名文档，是否导入成新的版本？'):
+            ans = QMessageBox.question(self, u'提示', u'已有同名文档，建立新的文档？', QMessageBox.Ok, QMessageBox.Cancel)
+            print ans
+            if ans == QMessageBox.Ok:
                 (newfileName, ok) = QInputDialog.getText(self, u'重命名文档', u'请输入新文档名称')
+                if ok:
+                    os.mkdir(newfileName)
+                    shutil.copy(importFile, os.path.join(newfileName, newfileName+'-%d'%len(os.listdir(newfileName))+'.mtf'))
+            else:
+                 shutil.copy(importFile, os.path.join(newfileName, newfileName+'-%d'%len(os.listdir(newfileName))+'.mtf'))
 
-        os.mkdir(newfileName)
-        shutil.copy(importFile, os.path.join(newfileName, newfileName+'-%d'%len(os.listdir(newfileName))+'.mtf'))
-        
     def undo(self):
         print 'Undo!'
         self.textEdit.undo()

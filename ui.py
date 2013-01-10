@@ -20,6 +20,8 @@ class IrisUI(QMainWindow):
     
     def __init__(self):
         super(IrisUI, self).__init__()
+        if not os.path.exists('work'):
+            os.mkdir('work')
         self.initUI()
     
     def initUI(self):

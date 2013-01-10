@@ -13,30 +13,31 @@ import mtf
 
 class IrisUI(QMainWindow):
     
-    currentFile = 'temp.mtf' 
+    tempMtf = os.path.join('work', 'temp.mtf')
+    tempHtml = os.path.join('work', 'temp.html')
+    currentMtf = tempMtf
+    currentHtml = tempHtml
     
     def __init__(self):
         super(IrisUI, self).__init__()
         self.initUI()
     
     def initUI(self):
-        self.fileList = QTreeWidget()
+        self.fileTree = QTreeWidget()
         self.textEdit = QTextEdit()
         splitter = QSplitter(self)
-        
-        self.fileList.setHeaderLabel('Files')
+        self.fileTree.setHeaderLabel(u'文档')
+        self.fileTree.itemClicked.connect(self.changeFile)
         self.textEdit.setFont(QFont("Times New Roman", 15, QFont.Light))
-        splitter.addWidget(self.fileList)
+        splitter.addWidget(self.fileTree)
         splitter.addWidget(self.textEdit)
         splitter.setStretchFactor(1,1)
         self.setIconSize(self.iconSize()*1.3)
-        
         self.setCentralWidget(splitter)
         self.initToolBar()
         self.textEdit.setFocus()
-        self.initFileList()
+        self.refreshTree()
         self.setWindowIcon(QIcon(os.path.join('img', 'logo.jpg')))
-
         self.setGeometry(50, 50, 1000, 650)
         self.setWindowTitle('Iris')
         
@@ -95,54 +96,69 @@ class IrisUI(QMainWindow):
         print 'New File!'
         (newfileName, ok) = QInputDialog.getText(self, u'新建', u'请输入新文档名称')
         if ok:
-            if os.path.isdir(newfileName):
+            if os.path.isdir(os.path.join('work', newfileName)):
                 QMessageBox.warning(self, u'错误', u'文档'+newfileName+u'已存在！')
             else:
-                os.mkdir(newfileName)
-                self.currentFile = os.path.join(newfileName, newfileName+'-%d'%len(os.listdir(newfileName))+'.mtf') 
-                f = open(self.currentFile, 'w')
+                workDir = os.path.join('work', newfileName)
+                os.mkdir(workDir)
+                fileCount = len(os.listdir(workDir))
+                print fileCount
+                self.currentMtf = os.path.join(workDir, newfileName+'-%d'%fileCount+'.mtf') 
+                f = open(self.currentMtf, 'w')
                 f.write('='+newfileName+'\n')
                 f.close()
                 self.textEdit.setText('='+newfileName)
                 self.textEdit.textCursor().movePosition(QTextCursor.End)
-                
+                self.refreshTree(newfileName, newfileName+'-%d'%fileCount+'.mtf')
                 
     def saveFile(self):
         print 'Save File!'
-        if not self.currentFile:
-            self.currentFile = 'temp.mtf'
-        f = open(self.currentFile, 'w')
+        if not self.currentMtf:
+            self.currentMtf = self.tempMtf
+            
+        print self.currentMtf
+        f = open(self.currentMtf, 'w')
         f.write(self.textEdit.toPlainText())
         f.close()
-        
+
     def newtagFile(self):
         print 'Newtag!'
-        self.currentFile = os.path.join(self.currentFile, self.currentFile+'-%d'%len(os.listdir(self.currentFile))+'.mtf') 
-        f = open(self.currentFile, 'w')
-        f.write(self.textEdit.toPlainText())
+        if self.currentMtf != self.tempMtf:
+            self.currentMtf = os.path.join('work', self.currentMtf, self.currentMtf+'-%d'%len(os.listdir(self.currentMtf[:-6]))+'.mtf') 
+            f = open(self.currentMtf, 'w')
+            f.write(self.textEdit.toPlainText())
+            f.close()
+            self.refreshTree()
         
     def preview(self):
         print 'Preview!'
         self.saveFile()
         text = self.textEdit.toPlainText()
         if text:
-            mtf.mtfToHtml(text)
-            os.system(self.currentFile.split('.')[0]+'.html')
-        print text
+            htmlStr = mtf.mtfToHtml(text)
+            f = open(self.currentHtml, 'w')
+            f.write(htmlStr)
+            f.close()
+            os.system(self.currentHtml)
+        print htmlStr
+        os.remove(self.currentHtml)
         
     def export(self):
         print 'Export!'
         self.saveFile()
-        mtf.mtfToHtml(self.textEdit.toPlainText())
-        print self.textEdit.toPlainText()
+        htmlStr = mtf.mtfToHtml(self.textEdit.toPlainText())
+        print htmlStr
+        f = open(self.currentHtml, 'w')
+        f.write(htmlStr)
+        f.close()
         if QMessageBox.information(self, u'导出',u'转换结束！点击确定打开文件。'):
-            os.system('test.html')
+            os.system(os.path.join(('work', self.currentMtf)))
         
     def importFile(self):
         print 'Import File!'
         (importFile, _) = QFileDialog.getOpenFileName(self, u'导入文件', os.path.expanduser('~'), '*.mtf')
         (_, newfileName) = os.path.split(importFile)
-        newfileName = newfileName.split('.')[0][:-2]
+        newfileName = newfileName[:-6]
         print newfileName
         if os.path.isdir(newfileName):
             ans = QMessageBox.question(self, u'提示', u'已有同名文档，建立新的文档？', QMessageBox.Ok, QMessageBox.Cancel)
@@ -150,11 +166,13 @@ class IrisUI(QMainWindow):
             if ans == QMessageBox.Ok:
                 (newfileName, ok) = QInputDialog.getText(self, u'重命名文档', u'请输入新文档名称')
                 if ok:
-                    os.mkdir(newfileName)
-                    shutil.copy(importFile, os.path.join(newfileName, newfileName+'-%d'%len(os.listdir(newfileName))+'.mtf'))
+                    workDir = os.path.join('work', newfileName)
+                    os.mkdir(workDir)
+                    shutil.copy(importFile, os.path.join(workDir, newfileName+'-%d'%len(os.listdir(workDir))+'.mtf'))
             else:
-                 shutil.copy(importFile, os.path.join(newfileName, newfileName+'-%d'%len(os.listdir(newfileName))+'.mtf'))
-
+                shutil.copy(importFile, os.path.join(workDir, newfileName+'-%d'%len(os.listdir(workDir))+'.mtf'))
+        self.refreshTree()
+    
     def undo(self):
         print 'Undo!'
         self.textEdit.undo()
@@ -172,14 +190,51 @@ class IrisUI(QMainWindow):
                              <a href="https://github.com/Kevin6241/muntool-iris">https://github.com/Kevin6241/muntool-iris</a>
                              </p>''')
         
-    def initFileList(self):
-        print "File List inited!"
+    def refreshTree(self, fFolder = '', fFile = ''):
+        print "File List inited!", fFolder, fFile
+        docs = []
+        self.fileTree.clear()
+        dirList = [folder \
+                   for folder in os.listdir('work') \
+                       if os.path.isdir(os.path.join('work', folder))]
+        for folder in dirList:
+            print folder
+            doc = QTreeWidgetItem(self.fileTree)
+            doc.setText(0, folder)
+            for file in os.listdir(os.path.join('work', folder)):
+                if file.split('.')[1] == 'mtf':
+                    tag = QTreeWidgetItem(doc)
+                    tag.setText(0, u'版本'+file[-5:-4])
+                    doc.addChild(tag) 
+                    print 'tag:', file
+                    if file == fFile:
+                        print 'tag yes'
+                        tag.setSelected(True)
+            print folder
+            if folder == fFolder:
                 
+                print 'folder yes'
+                doc.setExpanded(True)
+            docs.append(doc)
+        if docs:
+            self.fileTree.addTopLevelItems(docs)
+                        
+    def changeFile(self):
+        print 'change file!'
+        self.saveFile()
+        thisItem = self.fileTree.currentItem().parent()
+        if thisItem:
+            workDir = os.path.join('work', thisItem.text(0))
+            self.currentMtf = os.path.join(workDir, thisItem.text(0)+'-%d'%(len(os.listdir(workDir))-1)+'.mtf')
+            f = open(self.currentMtf)
+            self.textEdit.setText(f.read())
+            f.close()
+        
     def __del__(self):
-        if os.path.exists('temp.mtf'):
-            os.remove('temp.mtf')
-        if os.path.exists('temp.html'):
-            os.remove('temp.html')
+        if os.path.exists(self.tempMtf):
+            os.remove(self.tempMtf)
+        if os.path.exists(self.tempHtml):
+            os.remove(self.tempHtml)
     
 def main():
     app = QApplication(sys.argv)

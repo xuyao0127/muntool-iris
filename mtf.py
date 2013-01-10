@@ -45,7 +45,5 @@ def mtfToHtml(mtfStr):
     htmlList.append('</body>')
     htmlStr = '\n'.join(htmlList)
     
-    f = open('test.html','w')
-    f.write(htmlStr)
-    f.close()
+    return htmlStr
     

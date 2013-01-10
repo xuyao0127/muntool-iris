@@ -10,6 +10,8 @@ tagList = {
     '*':['<p>', '</p>'], \
     '#':['<li>', '</li>']
 }
+
+style = ''
     
 def convert(token, content):
     if content[-1] == '\n':
@@ -30,7 +32,7 @@ def mtfToHtml(mtfStr):
         
     print mtfList
     
-    htmlList = ['<head><title>', 'test2', '</title></head>', '<body>']
+    htmlList = ['<head><title>', 'test2', '</title>', style,'</head>', '<body>']
     
     for item in mtfList:
         if item:

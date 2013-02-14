@@ -8,10 +8,9 @@ from PySide import QtGui
 
 class FileDB():
     def __init__(self, workPath, win):
-        if os.path.exists(workPath):
-            self.workPath = workPath
-        else:
+        if not os.path.exists(workPath):
             os.mkdir(workPath)
+        self.workPath = workPath
         self.docs = {}
         self.win = win
         self.currentDoc = None

@@ -17,11 +17,7 @@ class Ui_MainWindow(object):
         icon.addPixmap(QtGui.QPixmap(":/icon/img/logo.png"), QtGui.QIcon.Normal, QtGui.QIcon.Off)
         MainWindow.setWindowIcon(icon)
         
-        self.centralwidget = QtGui.QWidget(MainWindow)
-        self.centralwidget.setObjectName("centralwidget")
-        self.verticalLayout = QtGui.QVBoxLayout(self.centralwidget)
-        self.verticalLayout.setObjectName("verticalLayout")
-        self.splitter = QtGui.QSplitter(self.centralwidget)
+        self.splitter = QtGui.QSplitter(MainWindow)
         
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(0)
@@ -30,7 +26,7 @@ class Ui_MainWindow(object):
         
         self.splitter.setSizePolicy(sizePolicy)
         self.splitter.setOrientation(QtCore.Qt.Horizontal)
-        self.splitter.setHandleWidth(2)
+        self.splitter.setHandleWidth(3)
         self.splitter.setObjectName("splitter")
         
         self.treeWidget = QtGui.QTreeWidget(self.splitter)
@@ -43,13 +39,8 @@ class Ui_MainWindow(object):
         self.textEdit.setFocus()
         self.textEdit.setFont(QtGui.QFont("Times New Roman", 15, QtGui.QFont.Light))
         
-        self.verticalLayout.addWidget(self.splitter)
-        MainWindow.setCentralWidget(self.centralwidget)
+        MainWindow.setCentralWidget(self.splitter)
         self.splitter.setStretchFactor(1,1)
-        
-        self.statusbar = QtGui.QStatusBar(MainWindow)
-        self.statusbar.setObjectName("statusbar")
-        MainWindow.setStatusBar(self.statusbar)
         
         self.toolBar = QtGui.QToolBar(MainWindow)
         self.toolBar.setObjectName("toolBar")
